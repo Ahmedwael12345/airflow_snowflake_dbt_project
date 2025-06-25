@@ -1,0 +1,54 @@
+version: "3"
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    restart: always
+
+  webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./plugins:/opt/airflow/plugins
+      - ./dbt:/opt/airflow/dbt
+      - ~/.dbt:/home/airflow/.dbt
+
+    command: webserver
+    restart: always
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - webserver
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./plugins:/opt/airflow/plugins
+      - ./dbt:/opt/airflow/dbt
+      - ~/.dbt:/home/airflow/.dbt
+
+    command: scheduler
+    restart: always
+
+volumes:
+  postgres-db-volume:
