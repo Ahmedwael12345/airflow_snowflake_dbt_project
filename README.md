@@ -65,7 +65,6 @@ docker-compose up --build
 👨‍💻 Author
 
 Ahmed Wael Galal
-🔗 LinkedIn • 💻 GitHub
 Email: ahmedwaelgalal2@gmail.com
 
 
